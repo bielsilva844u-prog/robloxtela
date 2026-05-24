@@ -102,10 +102,14 @@ function normalizeAmount(value) {
   return Math.min(amount, 1000000);
 }
 
+function formatAmount(value) {
+  return normalizeAmount(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
 function setSelectedAmount(value) {
   selectedAmount = normalizeAmount(value);
-  customAmount.value = String(selectedAmount);
-  selectedAmountEl.textContent = String(selectedAmount);
+  customAmount.value = formatAmount(selectedAmount);
+  selectedAmountEl.textContent = formatAmount(selectedAmount);
 
   amountButtons.querySelectorAll("button").forEach((item) => {
     item.setAttribute("aria-pressed", String(Number(item.dataset.amount) === selectedAmount));
@@ -117,7 +121,7 @@ function showToast() {
 
   window.clearTimeout(toastTimer);
   toastAvatar.src = selectedUser.avatarUrl || fallbackAvatar;
-  toastText.innerHTML = `@${selectedUser.name} recebeu <i class="coin"></i> ${selectedAmount.toLocaleString("pt-BR")}`;
+  toastText.innerHTML = `@${selectedUser.name} recebeu <i class="coin"></i> ${formatAmount(selectedAmount)}`;
   toast.hidden = false;
 
   toastTimer = window.setTimeout(() => {
@@ -136,12 +140,22 @@ async function lookupRobloxUser(name) {
   return payload;
 }
 
-function openModal() {
-  overlay.hidden = false;
+function resetModal() {
+  selectedUser = null;
+  username.value = "";
+  results.innerHTML = '<p class="empty">Digite um usuário Roblox e clique em Buscar.</p>';
+  profileAvatar.src = fallbackAvatar;
+  profileName.textContent = "Usuário";
+  profileUsername.textContent = "@usuario";
+  safeNote.textContent = "";
   searchStep.hidden = false;
   sendStep.hidden = true;
   confirmStep.hidden = true;
-  safeNote.textContent = "";
+}
+
+function openModal() {
+  resetModal();
+  overlay.hidden = false;
   requestAnimationFrame(() => username.focus());
 }
 
@@ -162,7 +176,7 @@ function selectUser(user) {
 }
 
 function amountText() {
-  return selectedAmount.toLocaleString("pt-BR");
+  return formatAmount(selectedAmount);
 }
 
 function renderBalance() {
@@ -229,8 +243,17 @@ amountButtons.addEventListener("click", (event) => {
 });
 
 customAmount.addEventListener("input", () => {
-  selectedAmount = normalizeAmount(customAmount.value);
-  selectedAmountEl.textContent = String(selectedAmount);
+  const digits = customAmount.value.replace(/\D/g, "");
+
+  if (!digits) {
+    customAmount.value = "";
+    selectedAmountEl.textContent = "0";
+    return;
+  }
+
+  selectedAmount = normalizeAmount(digits);
+  customAmount.value = formatAmount(selectedAmount);
+  selectedAmountEl.textContent = formatAmount(selectedAmount);
   amountButtons.querySelectorAll("button").forEach((item) => {
     item.setAttribute("aria-pressed", String(Number(item.dataset.amount) === selectedAmount));
   });
