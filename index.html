@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Comprar Robux</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="logo" href="#">R<span></span>BLOX</a>
+      <nav class="main-nav">
+        <a href="#">Destaques</a>
+        <a href="#">Mercado</a>
+        <a href="#">Criar</a>
+        <a href="#">Robux</a>
+      </nav>
+      <label class="search">
+        <span aria-hidden="true"></span>
+        <input type="search" placeholder="Pesquisar" />
+      </label>
+      <div class="account">
+        <img id="topAvatar" alt="" />
+        <strong>mygame43</strong>
+        <b>✓</b>
+        <span class="robux-mini"><i class="coin"></i><span id="topBalance">83.268</span></span>
+        <div class="settings">
+          <button class="gear" id="settingsButton" type="button" aria-label="Configurar">⚙</button>
+          <div class="settings-menu" id="settingsMenu" hidden>
+            <header>
+              <strong>Adicionar Robux</strong>
+              <span><i class="coin"></i><span id="settingsBalance">83.268</span></span>
+            </header>
+            <label for="addRobuxInput">Quantidade</label>
+            <div class="settings-input">
+              <i class="coin"></i>
+              <input id="addRobuxInput" type="number" min="1" step="1" value="1000" />
+            </div>
+            <div class="quick-add" aria-label="valores rápidos">
+              <button type="button" data-add="1000">+1.000</button>
+              <button type="button" data-add="10000">+10.000</button>
+              <button type="button" data-add="100000">+100.000</button>
+            </div>
+            <button class="add-submit" id="addRobuxButton" type="button">Adicionar ao saldo</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="side-profile">
+        <img id="sideAvatar" alt="" />
+        <strong>mygame43</strong>
+        <b>✓</b>
+      </div>
+      <nav class="side-nav">
+        <a href="#"><span>⌂</span>Início</a>
+        <a href="#"><span>♙</span>Perfil</a>
+        <a href="#"><span>▣</span>Roblox Plus</a>
+        <a href="#"><span>▭</span>Mensagens</a>
+        <a href="#"><span>♧</span>Amizades <em>3</em></a>
+        <a href="#"><span>♟</span>Avatar</a>
+        <a href="#"><span>▤</span>Inventário</a>
+        <a href="#"><span>↔</span>Trocar</a>
+        <a href="#"><span>♧</span>Comunidades</a>
+        <a href="#"><span>✎</span>Blog</a>
+        <a href="#"><span>▱</span>Loja Oficial</a>
+        <a href="#"><span>▣</span>Compre cartões presente</a>
+      </nav>
+      <div class="plus-card">
+        <span>▣</span>
+        <p>Mais diversão por menos Robux. Assine o Roblox Plus.</p>
+        <a href="#">Assinar</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div class="toast" id="toast" hidden>
+          <img id="toastAvatar" alt="" />
+          <div>
+            <strong>Robux enviado</strong>
+            <span id="toastText">@usuario recebeu <i class="coin"></i> 0</span>
+          </div>
+        </div>
+        <div class="wallet">
+          <span><i class="coin"></i><span id="walletBalance">83.268</span></span>
+          <button id="openSend" type="button">Enviar</button>
+        </div>
+        <h1>Aproveite até<br />25% a mais de<br />Robux</h1>
+      </section>
+
+      <section class="store">
+        <h2>Item bônus que escolhemos para você</h2>
+        <div class="card">
+          <div class="bonus-banner">
+            <img class="cash-img" src="https://i.ibb.co/R4T8J59g/2x-money.png" alt="2x money" />
+            <div>
+              <strong>Roube um Brainrot <small>i</small></strong>
+              <span>Dinheiro x2</span>
+            </div>
+          </div>
+          <div class="packages" id="packages"></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="overlay" id="overlay" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <header class="modal-head">
+          <div>
+            <i class="coin"></i>
+            <strong id="modalTitle">Send Robux</strong>
+          </div>
+          <div>
+            <i class="coin"></i>
+            <strong id="modalBalance">83.268</strong>
+            <button id="closeModal" type="button" aria-label="Fechar">x</button>
+          </div>
+        </header>
+
+        <div id="searchStep">
+          <label class="modal-search">
+            <input id="username" type="search" placeholder="Search by username" autocomplete="off" />
+            <button id="lookupButton" type="button">Buscar</button>
+          </label>
+          <h3>Resultados</h3>
+          <div class="results" id="results">
+            <p class="empty">Digite um usuário Roblox e clique em Buscar.</p>
+          </div>
+        </div>
+
+        <div id="sendStep" hidden>
+          <div class="selected-user">
+            <img id="profileAvatar" alt="" />
+            <strong id="profileName">Usuário</strong>
+            <span id="profileUsername">@usuario</span>
+            <b><i class="coin"></i><span id="selectedAmount">25</span></b>
+          </div>
+          <div class="amount-box">
+            <label for="customAmount">Choose amount</label>
+            <div class="custom-amount">
+              <i class="coin"></i>
+              <input id="customAmount" type="number" min="1" max="1000000" step="1" value="25" inputmode="numeric" />
+            </div>
+            <div class="amounts" id="amountButtons"></div>
+          </div>
+          <button class="next" id="nextButton" type="button">Avançar</button>
+          <p class="modal-note">Robux are sent within 1-2 days with no fees</p>
+          <p class="safe-note" id="safeNote"></p>
+        </div>
+
+        <div id="confirmStep" hidden>
+          <div class="confirm-user">
+            <img id="confirmAvatar" alt="" />
+            <strong id="confirmName">Usuário</strong>
+            <span id="confirmUsername">@usuario</span>
+            <small><i></i> Entrou em 2022</small>
+          </div>
+          <div class="confirm-amount">
+            <i class="coin"></i>
+            <strong id="confirmAmount">2.000</strong>
+          </div>
+          <div class="confirm-actions">
+            <button id="confirmSend" type="button">Enviar</button>
+            <button id="editSend" type="button">Editar</button>
+          </div>
+          <p class="confirm-note">
+            Você precisa fazer a verificação de idade ou obter o consentimento dos pais para enviar Robux.
+            Depois de enviar, não é possível cancelar.
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
