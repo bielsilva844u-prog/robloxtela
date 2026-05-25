@@ -148,24 +148,45 @@ async function fetchJson(url, options) {
 }
 
 async function lookupRobloxUserFromStaticPage(name) {
-  const searchUrl = new URL("https://users.rotunnel.com/v1/users/search");
-  searchUrl.searchParams.set("keyword", name);
-  searchUrl.searchParams.set("limit", "10");
+  let userPayload;
 
-  const userPayload = await fetchJson(searchUrl);
-  const user = userPayload.data?.find((item) => item.name.toLowerCase() === name.toLowerCase()) ?? null;
+  const rotunnelLookupUrl = new URL("https://users.rotunnel.com/v1/usernames/users");
+  rotunnelLookupUrl.searchParams.set("_", String(Date.now()));
+
+  try {
+    userPayload = await fetchJson(rotunnelLookupUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ usernames: [name], excludeBannedUsers: true }),
+    });
+  } catch {
+    userPayload = await fetchJson("https://users.roproxy.com/v1/usernames/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ usernames: [name], excludeBannedUsers: true }),
+    });
+  }
+
+  const user = userPayload.data?.[0] ?? null;
 
   if (!user) {
     return null;
   }
 
-  const avatarUrl = new URL("https://thumbnails.rotunnel.com/v1/users/avatar-headshot");
+  const avatarUrl = new URL("https://thumbnails.roproxy.com/v1/users/avatar-headshot");
   avatarUrl.searchParams.set("userIds", String(user.id));
   avatarUrl.searchParams.set("size", "150x150");
   avatarUrl.searchParams.set("format", "Png");
   avatarUrl.searchParams.set("isCircular", "true");
 
-  const avatarPayload = await fetchJson(avatarUrl);
+  let avatarPayload;
+
+  try {
+    avatarPayload = await fetchJson(avatarUrl);
+  } catch {
+    avatarUrl.hostname = "thumbnails.rotunnel.com";
+    avatarPayload = await fetchJson(avatarUrl);
+  }
 
   return {
     id: user.id,
