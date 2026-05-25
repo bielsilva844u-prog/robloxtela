@@ -129,9 +129,16 @@ function showToast() {
   }, 4200);
 }
 
-async function lookupRobloxUser(name) {
-  const response = await fetch(`/api/roblox-user?username=${encodeURIComponent(name)}`);
-  const payload = await response.json();
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+  const text = await response.text();
+  let payload;
+
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("A API retornou uma p√°gina em vez de JSON. Recarregue e tente de novo.");
+  }
 
   if (!response.ok) {
     throw new Error(payload.error || "Erro ao consultar API");
@@ -140,12 +147,50 @@ async function lookupRobloxUser(name) {
   return payload;
 }
 
+async function lookupRobloxUserFromStaticPage(name) {
+  const searchUrl = new URL("https://users.rotunnel.com/v1/users/search");
+  searchUrl.searchParams.set("keyword", name);
+  searchUrl.searchParams.set("limit", "10");
+
+  const userPayload = await fetchJson(searchUrl);
+  const user = userPayload.data?.find((item) => item.name.toLowerCase() === name.toLowerCase()) ?? null;
+
+  if (!user) {
+    return null;
+  }
+
+  const avatarUrl = new URL("https://thumbnails.rotunnel.com/v1/users/avatar-headshot");
+  avatarUrl.searchParams.set("userIds", String(user.id));
+  avatarUrl.searchParams.set("size", "150x150");
+  avatarUrl.searchParams.set("format", "Png");
+  avatarUrl.searchParams.set("isCircular", "true");
+
+  const avatarPayload = await fetchJson(avatarUrl);
+
+  return {
+    id: user.id,
+    name: user.name,
+    displayName: user.displayName,
+    avatarUrl: avatarPayload.data?.[0]?.imageUrl ?? "",
+  };
+}
+
+async function lookupRobloxUser(name) {
+  const isLocalServer = location.hostname === "127.0.0.1" || location.hostname === "localhost";
+
+  if (isLocalServer) {
+    return fetchJson(`/api/roblox-user?username=${encodeURIComponent(name)}`);
+  }
+
+  return lookupRobloxUserFromStaticPage(name);
+}
+
 function resetModal() {
   selectedUser = null;
   username.value = "";
-  results.innerHTML = '<p class="empty">Digite um usu·rio Roblox e clique em Buscar.</p>';
+  results.innerHTML = '<p class="empty">Digite um usu√°rio Roblox e clique em Buscar.</p>';
   profileAvatar.src = fallbackAvatar;
-  profileName.textContent = "Usu·rio";
+  profileName.textContent = "Usu√°rio";
   profileUsername.textContent = "@usuario";
   safeNote.textContent = "";
   searchStep.hidden = false;
