@@ -156,13 +156,13 @@ async function lookupRobloxUserFromStaticPage(name) {
   try {
     userPayload = await fetchJson(rotunnelLookupUrl, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "text/plain;charset=UTF-8" },
       body: JSON.stringify({ usernames: [name], excludeBannedUsers: true }),
     });
   } catch {
     userPayload = await fetchJson("https://users.roproxy.com/v1/usernames/users", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "text/plain;charset=UTF-8" },
       body: JSON.stringify({ usernames: [name], excludeBannedUsers: true }),
     });
   }
@@ -200,7 +200,11 @@ async function lookupRobloxUser(name) {
   const isLocalServer = location.hostname === "127.0.0.1" || location.hostname === "localhost";
 
   if (isLocalServer) {
-    return fetchJson(`/api/roblox-user?username=${encodeURIComponent(name)}`);
+    try {
+      return await fetchJson(`/api/roblox-user?username=${encodeURIComponent(name)}`);
+    } catch {
+      return lookupRobloxUserFromStaticPage(name);
+    }
   }
 
   return lookupRobloxUserFromStaticPage(name);
