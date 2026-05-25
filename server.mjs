@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 
 const root = process.cwd();
 const port = Number(process.env.PORT) || 5501;
+const host = process.env.HOST || "0.0.0.0";
 
 const types = {
   ".html": "text/html; charset=utf-8",
@@ -39,10 +40,20 @@ async function robloxUser(username) {
   avatarUrl.searchParams.set("userIds", String(user.id));
   avatarUrl.searchParams.set("size", "150x150");
   avatarUrl.searchParams.set("format", "Png");
-  avatarUrl.searchParams.set("isCircular", "true");
+  avatarUrl.searchParams.set("isCircular", "false");
 
-  const avatarResponse = await fetch(avatarUrl);
-  const avatarPayload = avatarResponse.ok ? await avatarResponse.json() : {};
+  let avatarPayload = {};
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const avatarResponse = await fetch(avatarUrl);
+    avatarPayload = avatarResponse.ok ? await avatarResponse.json() : {};
+
+    if (avatarPayload.data?.[0]?.state === "Completed" && avatarPayload.data?.[0]?.imageUrl) {
+      break;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  }
 
   return {
     id: user.id,
@@ -91,6 +102,6 @@ createServer(async (request, response) => {
     "content-type": types[extname(filePath)] ?? "application/octet-stream",
   });
   createReadStream(filePath).pipe(response);
-}).listen(port, "127.0.0.1", () => {
+}).listen(port, host, () => {
   console.log(`http://127.0.0.1:${port}`);
 });

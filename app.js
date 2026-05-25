@@ -62,6 +62,14 @@ function robuxImageIcon() {
   return '<img class="robux-icon" src="https://i.ibb.co/svdv5vkP/Robux-2019-Logo-Black-svg.png" alt="" />';
 }
 
+function applyAvatar(image, avatarUrl) {
+  image.onerror = () => {
+    image.onerror = null;
+    image.src = fallbackAvatar;
+  };
+  image.src = avatarUrl || fallbackAvatar;
+}
+
 function renderPackages() {
   packagesEl.innerHTML = packages
     .map(
@@ -120,7 +128,7 @@ function showToast() {
   if (!selectedUser) return;
 
   window.clearTimeout(toastTimer);
-  toastAvatar.src = selectedUser.avatarUrl || fallbackAvatar;
+  applyAvatar(toastAvatar, selectedUser.avatarUrl);
   toastText.innerHTML = `@${selectedUser.name} recebeu <i class="coin"></i> ${formatAmount(selectedAmount)}`;
   toast.hidden = false;
 
@@ -177,7 +185,7 @@ async function lookupRobloxUserFromStaticPage(name) {
   avatarUrl.searchParams.set("userIds", String(user.id));
   avatarUrl.searchParams.set("size", "150x150");
   avatarUrl.searchParams.set("format", "Png");
-  avatarUrl.searchParams.set("isCircular", "true");
+  avatarUrl.searchParams.set("isCircular", "false");
 
   let avatarPayload;
 
@@ -197,9 +205,7 @@ async function lookupRobloxUserFromStaticPage(name) {
 }
 
 async function lookupRobloxUser(name) {
-  const isLocalServer = location.hostname === "127.0.0.1" || location.hostname === "localhost";
-
-  if (isLocalServer) {
+  if (location.protocol !== "file:") {
     try {
       return await fetchJson(`/api/roblox-user?username=${encodeURIComponent(name)}`);
     } catch {
@@ -214,7 +220,7 @@ function resetModal() {
   selectedUser = null;
   username.value = "";
   results.innerHTML = '<p class="empty">Digite um usuário Roblox e clique em Buscar.</p>';
-  profileAvatar.src = fallbackAvatar;
+  applyAvatar(profileAvatar, "");
   profileName.textContent = "Usuário";
   profileUsername.textContent = "@usuario";
   safeNote.textContent = "";
@@ -235,7 +241,7 @@ function close() {
 
 function selectUser(user) {
   selectedUser = user;
-  profileAvatar.src = user.avatarUrl || fallbackAvatar;
+  applyAvatar(profileAvatar, user.avatarUrl);
   profileName.textContent = user.name;
   profileUsername.textContent = user.displayName && user.displayName !== user.name ? user.displayName : `@${user.name}`;
   setSelectedAmount(selectedAmount);
@@ -260,7 +266,7 @@ function renderBalance() {
 function showConfirmStep() {
   if (!selectedUser) return;
 
-  confirmAvatar.src = selectedUser.avatarUrl || fallbackAvatar;
+  applyAvatar(confirmAvatar, selectedUser.avatarUrl);
   confirmName.textContent = selectedUser.name;
   confirmUsername.textContent =
     selectedUser.displayName && selectedUser.displayName !== selectedUser.name ? selectedUser.displayName : `@${selectedUser.name}`;
@@ -273,13 +279,14 @@ function showConfirmStep() {
 function renderResult(user) {
   results.innerHTML = `
     <button class="result" type="button">
-      <img src="${user.avatarUrl || fallbackAvatar}" alt="" />
+      <img alt="" />
       <span>
         <strong>${user.displayName || user.name}</strong>
         <span>@${user.name}</span>
       </span>
     </button>
   `;
+  applyAvatar(results.querySelector("img"), user.avatarUrl);
   results.querySelector(".result").addEventListener("click", () => selectUser(user));
 }
 
@@ -402,6 +409,6 @@ renderPackages();
 renderAmounts();
 setSelectedAmount(selectedAmount);
 renderBalance();
-topAvatar.src = accountAvatar;
-sideAvatar.src = accountAvatar;
-profileAvatar.src = fallbackAvatar;
+applyAvatar(topAvatar, accountAvatar);
+applyAvatar(sideAvatar, accountAvatar);
+applyAvatar(profileAvatar, "");
