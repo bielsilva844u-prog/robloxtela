@@ -14,6 +14,7 @@ const fallbackAvatar =
 let selectedUser = null;
 let selectedAmount = 25;
 let robuxBalance = 83268;
+let sendHistory = [];
 
 const amountButtons = document.querySelector("#amountButtons");
 const addRobuxButton = document.querySelector("#addRobuxButton");
@@ -40,6 +41,7 @@ const results = document.querySelector("#results");
 const safeNote = document.querySelector("#safeNote");
 const searchStep = document.querySelector("#searchStep");
 const selectedAmountEl = document.querySelector("#selectedAmount");
+const sendHistoryEl = document.querySelector("#sendHistory");
 const sendStep = document.querySelector("#sendStep");
 const settingsBalance = document.querySelector("#settingsBalance");
 const settingsButton = document.querySelector("#settingsButton");
@@ -52,7 +54,9 @@ const toastAvatar = document.querySelector("#toastAvatar");
 const toastText = document.querySelector("#toastText");
 const walletBalance = document.querySelector("#walletBalance");
 const username = document.querySelector("#username");
+const historyCount = document.querySelector("#historyCount");
 let toastTimer;
+const historyStorageKey = "robuxSendHistory";
 
 function coin() {
   return '<i class="coin" aria-hidden="true"></i>';
@@ -112,6 +116,74 @@ function normalizeAmount(value) {
 
 function formatAmount(value) {
   return normalizeAmount(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function formatHistoryTime(sentAt) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(sentAt));
+}
+
+function loadHistory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(historyStorageKey) || "[]");
+    sendHistory = Array.isArray(saved) ? saved.slice(0, 5) : [];
+  } catch {
+    sendHistory = [];
+  }
+}
+
+function saveHistory() {
+  localStorage.setItem(historyStorageKey, JSON.stringify(sendHistory));
+}
+
+function renderHistory() {
+  historyCount.textContent = String(sendHistory.length);
+
+  if (!sendHistory.length) {
+    sendHistoryEl.innerHTML = "<p>Nenhum Robux enviado ainda.</p>";
+    return;
+  }
+
+  sendHistoryEl.innerHTML = sendHistory
+    .map(
+      (item) => `
+        <article class="history-item">
+          <img alt="" data-avatar="${item.avatarUrl || ""}" />
+          <div>
+            <strong>@${item.name}</strong>
+            <span>${formatHistoryTime(item.sentAt)}</span>
+          </div>
+          <b>${coin()} ${formatAmount(item.amount)}</b>
+        </article>
+      `,
+    )
+    .join("");
+
+  sendHistoryEl.querySelectorAll("img").forEach((image) => {
+    applyAvatar(image, image.dataset.avatar);
+  });
+}
+
+function addHistoryItem() {
+  if (!selectedUser) return;
+
+  sendHistory = [
+    {
+      id: selectedUser.id,
+      name: selectedUser.name,
+      avatarUrl: selectedUser.avatarUrl,
+      amount: selectedAmount,
+      sentAt: Date.now(),
+    },
+    ...sendHistory,
+  ].slice(0, 5);
+
+  saveHistory();
+  renderHistory();
 }
 
 function setSelectedAmount(value) {
@@ -363,6 +435,7 @@ confirmSend.addEventListener("click", () => {
 
   robuxBalance -= selectedAmount;
   renderBalance();
+  addHistoryItem();
 
   safeNote.textContent = "";
   showToast();
@@ -407,6 +480,8 @@ overlay.addEventListener("click", (event) => {
 
 renderPackages();
 renderAmounts();
+loadHistory();
+renderHistory();
 setSelectedAmount(selectedAmount);
 renderBalance();
 applyAvatar(topAvatar, accountAvatar);
