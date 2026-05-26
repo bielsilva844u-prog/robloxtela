@@ -107,7 +107,7 @@ function normalizeAmount(value) {
     return 1;
   }
 
-  return Math.min(amount, 1000000);
+  return amount;
 }
 
 function formatAmount(value) {
